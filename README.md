@@ -1,4 +1,4 @@
-# express-group-router
+# Express Group Router
 ## Features:
 This package support extend function of Router in ExpressJS to grouping routes.
 * It can set prefix for an routes group.
