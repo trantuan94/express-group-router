@@ -1,6 +1,6 @@
 {
   "name": "express-group-router",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Extend the router function in ExpressJS for grouping route with prefix and add midddlewares for each route.",
   "main": "index.js",
   "scripts": {

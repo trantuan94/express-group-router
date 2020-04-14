@@ -64,6 +64,14 @@ module.exports = (app) => {
                 router._prefix = '';
             }
         }
+        // Add all URL params from parent router to child router, when using function router.param().
+        if(typeof this.params === 'object' && Object.keys(this.params).length) {
+            router.params = this.params;
+        }
+        if(Array.isArray(this._params) && this._params.legnth) {
+            router._params = this._params;
+        }
+
         if(configure && typeof configure === 'function') {
             configure(router);
         }
