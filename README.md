@@ -41,6 +41,7 @@ router.group('/foo', [fooMiddleware], (router) => {
         })
     })
 });
+router.init(app);
 
 ```
 
