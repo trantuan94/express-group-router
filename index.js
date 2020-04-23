@@ -117,7 +117,7 @@ class Router {
     }
 
     let router = new Router();
-    router.middlewares = _.concat(this.middlewares, _middlewares);
+    router.middlewares = this.middlewares.concat(_middlewares);
     if (this.params && Object.keys(this.params).length) {
       router.params = this.params;
     }
