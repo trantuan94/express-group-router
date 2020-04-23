@@ -11,6 +11,40 @@ npm i --save express-group-router
 ```
 
 ## Usage:
+### Version 2.x
+```js
+const express = require('express');
+const app = express();
+const Router = require('express-group-router');
+let router = new Router();
+const fooMiddleware = (req, res, next) => {
+    console.log('foo');
+    next();
+}
+
+const barMiddleware = (req, res, next) => {
+    console.log('bar');
+    next();
+}
+router.get('/hello', (req, res) => {
+    res.send('Hello world');
+})
+
+router.group('/foo', [fooMiddleware], (router) => {
+    router.get('/a', (req, res) => {
+        res.send('Foo');
+    });
+
+    router.group('/bar', [barMiddleware], (router) => {
+        router.get('/test', (req, res) => {
+            res.send('Test Bar');
+        })
+    })
+});
+
+```
+
+### Version 1.x
 ```js
 const express = require('express');
 const app = express();
