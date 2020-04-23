@@ -110,8 +110,10 @@ class Router {
         _middlewares = [_middlewares];
       } else if (Array.isArray(params[0])) {
         _middlewares = params[0];
+      } else if (!Array.isArray(params[0]) && typeof params[0] === 'object') {
+        _prefix = params[0].prefix || '';
+        _middlewares = params[0].middlewares;
       }
-      _callback = params[1];
     } else if (arguments.length === 1 && typeof params[0] === 'function') {
       _callback = params[0]
     }
@@ -138,7 +140,9 @@ class Router {
         router.prefix = '';
       }
     }
-    _callback(router);
+    if ('function' === (typeof _callback)) {
+      _callback(router);
+    }
 
     this.groups.push(router);
 
@@ -178,81 +182,3 @@ class Router {
   }
 }
 module.exports = Router;
-// v1.0.x
-// module.exports = (app) => {
-//     express.Router.group = function(...params) {
-//         let prefix;
-//         let middlewares = []
-//         let configure;
-//         if(arguments.length === 3) {
-//             if(typeof arguments[0] === 'string') {
-//                 prefix = arguments[0];
-//             } else if(typeof arguments[0] === 'function') {
-//                 middlewares = [arguments[0]]
-//             } else if(Array.isArray(arguments[0])) {
-//                 middlewares = arguments[0]
-//             }
-//             if(typeof arguments[1] === 'function') {
-//                 middlewares = [arguments[1]]
-//             } else if(typeof arguments[1] === 'string') {
-//                 prefix = arguments[1]
-//             }
-//             if(typeof arguments[2] === 'function') {
-//                 configure = arguments[2]
-//             }
-//         } else if(arguments.length === 2) {
-//             if(typeof arguments[0] === 'object') {
-//                 prefix = arguments[0].prefix || '';
-//                 middlewares = arguments[0].middlewares || [];
-//                 if (typeof middlewares === 'function') {
-//                     middlewares = [middlewares]
-//                 }
-//             } else if(typeof arguments[0] === 'string') {
-//                 prefix = arguments[0];
-//             } else if(typeof arguments[0] === 'function') {
-//                 middlewares = [arguments[0]];
-//             } else if(Array.isArray(arguments[0])) {
-//                 middlewares = arguments[0];
-//             }
-//             configure = arguments[1];
-//         } else if(arguments.length === 1 && typeof arguments[0] === 'function') {
-//             prefix = '';
-//             middlewares = [];
-//             configure = arguments[0]
-//         }
-//         let router = express.Router();
-
-//         if(Array.isArray(middlewares) && middlewares.length > 0) {
-//             router.use(...middlewares);
-//         }
-//         if(prefix && prefix !== '' && prefix !== '/') {
-//             if(this._prefix && this._prefix !== '/' && this._prefix !== '') {
-//                 app.use(this._prefix + prefix, router);
-//                 router._prefix = this._prefix + prefix;
-//             } else {
-//                 router._prefix = prefix;
-//                 app.use(prefix, router);
-//             }
-//         } else {
-//             if(this._prefix && this._prefix !== '' && this._prefix !== '/') {
-//                 app.use(this._prefix, router);
-//                 router._prefix = this._prefix;
-//             } else {
-//                 app.use(router);
-//                 router._prefix = '';
-//             }
-//         }
-//         // Add all URL params from parent router to child router, when using function router.param().
-//         if(typeof this.params === 'object' && Object.keys(this.params).length) {
-//             router.params = this.params;
-//         }
-//         if(Array.isArray(this._params) && this._params.legnth) {
-//             router._params = this._params;
-//         }
-
-//         if(configure && typeof configure === 'function') {
-//             configure(router);
-//         }
-//         return router;
-//     }
-// }
