@@ -114,8 +114,9 @@ class Router {
         _prefix = params[0].prefix || '';
         _middlewares = params[0].middlewares;
       }
+      _callback = params[1];
     } else if (arguments.length === 1 && typeof params[0] === 'function') {
-      _callback = params[0]
+      _callback = params[0];
     }
 
     let router = new Router();
