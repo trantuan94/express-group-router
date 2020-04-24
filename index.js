@@ -112,7 +112,7 @@ class Router {
         _middlewares = params[0];
       } else if (!Array.isArray(params[0]) && typeof params[0] === 'object') {
         _prefix = params[0].prefix || '';
-        _middlewares = params[0].middlewares;
+        _middlewares = params[0].middlewares || [];
       }
       _callback = params[1];
     } else if (arguments.length === 1 && typeof params[0] === 'function') {
@@ -169,6 +169,7 @@ class Router {
         }
       }
     }
+
     for (let group of this.groups) {
       let groupRoutes = group.init();
       if (groupRoutes.length) {
