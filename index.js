@@ -1,24 +1,24 @@
 'use strict';
 const express = require('express');
-const path = require('path');
+const Urljoin = require('url-join');
 /**
  * v2.x
  * Nodejs >= 10.0
  */
-class Router {
-  constructor (options = {}) {
+class Route {
+  constructor (initparams = {}) {
     let { 
       prefix = '',
       middlewares = [],
       params = {},
       _params = []
-    } = options;
-    this.prefix = prefix;
-    this.middlewares = middlewares;
+    } = initparams;
+    this.$prefix = prefix;
+    this.$middlewares = middlewares;
     this.params = params;
     this._params = _params;
-    this.groups = [];
-    this.methods = {
+    this.$groups = [];
+    this.$methods = {
       get: [],
       post: [],
       put: [],
@@ -30,43 +30,43 @@ class Router {
   }
 
   get (...params) {
-    this.methods.get.push(params);
+    this.$methods.get.push(params);
 
     return this;
   }
 
   post (...params) {
-    this.methods.post.push(params);
+    this.$methods.post.push(params);
 
     return this;
   }
 
   put (...params) {
-    this.methods.put.push(params);
+    this.$methods.put.push(params);
 
     return this;
   }
 
   patch (...params) {
-    this.methods.patch.push(params);
+    this.$methods.patch.push(params);
 
     return this;
   }
 
   delete (...params) {
-    this.methods.delete.push(params);
+    this.$methods.delete.push(params);
 
     return this;
   }
 
   head (...params) {
-    this.methods.head.push(params);
+    this.$methods.head.push(params);
 
     return this;
   }
 
   all (...params) {
-    this.methods.all.push(params);
+    this.$methods.all.push(params);
 
     return this;
   }
@@ -119,49 +119,45 @@ class Router {
       _callback = params[0];
     }
 
-    let router = new Router();
-    router.middlewares = this.middlewares.concat(_middlewares);
-    if (this.params && Object.keys(this.params).length) {
-      router.params = this.params;
-    }
-    if (Array.isArray(this._params) && this._params.length) {
-      router._params = this._params;
-    }
-
+    _middlewares = _middlewares.concat(this.$middlewares);
     if (_prefix && _prefix !== '' && _prefix !== '/') {
-      if (this.prefix && this.prefix !== '/' && this.prefix !== '') {
-        router.prefix = this.prefix + _prefix;
-      } else {
-        router.prefix = _prefix;
-      }
+      _prefix = (this.$prefix && this.$prefix !== '/' && this.$prefix !== '')
+        ? Urljoin(this.$prefix, _prefix) : _prefix;
     } else { // not found prefix from 
-      if (this.prefix && this.prefix !== '' && this.prefix !== '/') {
-        router.prefix = this.prefix;
-      } else {
-        router.prefix = '';
-      }
+      _prefix = (this.$prefix && this.$prefix !== '' && this.$prefix !== '/') ? this.$prefix : '';
     }
+    let router = new Router({
+      prefix: _prefix,
+      middlewares: _middlewares,
+      params: this.params && Object.keys(this.params).length ? this.params : {},
+      _params: Array.isArray(this._params) && this._params.length ? this._params : [],
+    })
     if ('function' === (typeof _callback)) {
       _callback(router);
+    } else {
+      throw new Error("The router's group function must has the callback function.")
     }
+    this.$groups.push(router);
 
-    this.groups.push(router);
 
     return this;
   }
 
   init (app = null) {
     let routes = [];
-    for (let method in this.methods) {
-      for (let routeParams of this.methods[method]) {
+    for (let method in this.$methods) {
+      for (let routeParams of this.$methods[method]) {
         let route = express.Router();
         route.params = this.params;
         route._params = this._params;
         if (routeParams.length >= 2) {
           let [uri, ...handler] = routeParams;
-          uri = path.posix.join(this.prefix, uri);
-          if (this.middlewares.length) {
-            route[method](uri, ...this.middlewares, ...handler);
+          uri = Urljoin(this.$prefix, uri);
+          if (!uri.startsWith('/')) {
+            uri = '/' + uri;
+          }
+          if (this.$middlewares.length) {
+            route[method](uri, ...this.$middlewares, ...handler);
           } else {
             route[method](uri, ...handler);
           }
@@ -169,8 +165,12 @@ class Router {
         }
       }
     }
+<<<<<<< Updated upstream
 
     for (let group of this.groups) {
+=======
+    for (let group of this.$groups) {
+>>>>>>> Stashed changes
       let groupRoutes = group.init();
       if (groupRoutes.length) {
         routes = routes.concat(groupRoutes);
@@ -182,5 +182,31 @@ class Router {
 
     return routes;
   }
+
+  prefix (prefix) {
+    this.$prefix = _prefix;
+
+    return this;
+  }
+
+  use (middlewares) {
+    if ('function' === (typeof middlewares)) {
+      this.$middlewares.push(middlewares);
+    } else if (Array.isArray(middlewares)) {
+      for (let middleware of middlewares) {
+        this.use(middleware);
+      }
+    } else {
+      throw new Error('Please use a middlewares function or Array of middlewares functions in Expressjs.');
+    }
+
+    return this;
+  }
+
+  middleware (middlewares) {
+    this.use(middlewares);
+
+    return this;
+  }
 }
-module.exports = Router;
+module.exports = Route;
