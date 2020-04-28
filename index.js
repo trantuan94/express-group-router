@@ -165,12 +165,7 @@ class Route {
         }
       }
     }
-<<<<<<< Updated upstream
-
-    for (let group of this.groups) {
-=======
     for (let group of this.$groups) {
->>>>>>> Stashed changes
       let groupRoutes = group.init();
       if (groupRoutes.length) {
         routes = routes.concat(groupRoutes);
