@@ -11,13 +11,21 @@ class Route {
       prefix = '',
       middlewares = [],
       params = {},
-      _params = []
+      _params = [],
+      options = {}
     } = initparams;
     this.$prefix = prefix;
     this.$middlewares = middlewares;
     this.params = params;
     this._params = _params;
     this.$groups = [];
+    this.$urls = [];
+    this.$options = {
+      caseSensitive: false,
+      mergeParams: true,
+      strict: false,
+    };
+    this.setOptions(options);
     this.$methods = {
       get: [],
       post: [],
@@ -97,6 +105,7 @@ class Route {
     let _prefix;
     let _middlewares = []
     let _callback;
+    let _options;
     // handle params
     if (arguments.length === 3) {
       [_prefix, _middlewares, _callback] = params;
@@ -113,41 +122,50 @@ class Route {
       } else if (!Array.isArray(params[0]) && typeof params[0] === 'object') {
         _prefix = params[0].prefix || '';
         _middlewares = params[0].middlewares || [];
+        _options = params[0].options || this.$options;
       }
       _callback = params[1];
     } else if (arguments.length === 1 && typeof params[0] === 'function') {
       _callback = params[0];
     }
 
-    _middlewares = _middlewares.concat(this.$middlewares);
-    if (_prefix && _prefix !== '' && _prefix !== '/') {
-      _prefix = (this.$prefix && this.$prefix !== '/' && this.$prefix !== '')
-        ? Urljoin(this.$prefix, _prefix) : _prefix;
-    } else { // not found prefix from 
-      _prefix = (this.$prefix && this.$prefix !== '' && this.$prefix !== '/') ? this.$prefix : '';
-    }
-    let router = new Router({
+    let router = new Route({
       prefix: _prefix,
       middlewares: _middlewares,
-      params: this.params && Object.keys(this.params).length ? this.params : {},
-      _params: Array.isArray(this._params) && this._params.length ? this._params : [],
+      params: {},
+      _params: [],
+      options: _options
     })
     if ('function' === (typeof _callback)) {
       _callback(router);
-    } else {
-      throw new Error("The router's group function must has the callback function.")
     }
     this.$groups.push(router);
 
-
-    return this;
+    return router;
   }
 
-  init (app = null) {
+  init (obj = null) {
     let routes = [];
+    if (obj && typeof obj === 'object' && !obj.use && typeof obj.use !== 'function') {
+      let {
+        parentPrefix = '',
+        parentMiddlewares = [],
+        parentParams = {},
+        _parentParams = []
+      } = obj;
+      this.$middlewares = parentMiddlewares.concat(this.$middlewares);
+      this.$prefix = Urljoin(parentPrefix, this.$prefix);
+      if (this.$options && this.$options.mergeParams) {
+        this.params = {...parentParams, ...this.params };
+        this._params = [..._parentParams, ...this._params];
+      }
+    }
     for (let method in this.$methods) {
       for (let routeParams of this.$methods[method]) {
-        let route = express.Router();
+        let route = express.Router({
+          caseSensitive: this.$options.caseSensitive,
+          strict: this.$options.strict
+        });
         route.params = this.params;
         route._params = this._params;
         if (routeParams.length >= 2) {
@@ -156,6 +174,7 @@ class Route {
           if (!uri.startsWith('/')) {
             uri = '/' + uri;
           }
+          this.$urls.push({url: uri, method: method });
           if (this.$middlewares.length) {
             route[method](uri, ...this.$middlewares, ...handler);
           } else {
@@ -166,20 +185,26 @@ class Route {
       }
     }
     for (let group of this.$groups) {
-      let groupRoutes = group.init();
+      let groupRoutes = group.init({
+        parentPrefix: this.$prefix,
+        parentMiddlewares: this.$middlewares,
+        parentParams: this.params,
+        _parentParams: this._params
+      });
       if (groupRoutes.length) {
         routes = routes.concat(groupRoutes);
+        this.$urls = this.$urls.concat(group.$urls);
       }
     }
-    if (app && typeof app.use === 'function') {
-      app.use(routes);
+    if (obj && typeof obj.use === 'function') {
+      obj.use(routes);
     }
 
     return routes;
   }
 
   prefix (prefix) {
-    this.$prefix = _prefix;
+    this.$prefix = prefix;
 
     return this;
   }
@@ -200,6 +225,23 @@ class Route {
 
   middleware (middlewares) {
     this.use(middlewares);
+
+    return this;
+  }
+
+  setOptions (options = null) {
+    if (options && typeof options === 'object') {
+      let {
+        caseSensitive = this.$options.caseSensitive || false,
+        mergeParams = this.$options.mergeParams || true,
+        strict = this.$options.strict || false
+      } = options;
+      this.$options = {
+        caseSensitive: !!caseSensitive,
+        mergeParams: !!mergeParams,
+        strict: !!strict
+      }
+    }
 
     return this;
   }

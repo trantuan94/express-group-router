@@ -41,10 +41,53 @@ router.group('/foo', [fooMiddleware], (router) => {
         })
     })
 });
-router.init(app);
+let listRoutes = router.init();
+app.use(listRoutes);
 
 ```
+You also use prefix(), middleware() as below to set prefix, set middlewares and options
+for router of ExpressJS;
+```js
+// Set prefix
+router.group((router) => {
+    router.get('testprefix', (req, res) => {
+        res.send('Test function set prefix');
+    })
+}).prefix('api').middleware(fooMiddleware);
+// Result: /api/testprefix - method GET with middleware fooMiddleware.
+```
+In ExpressJS Router (The original Router of Express, it provide options argument when call constructor)
+You can refer from <a href="https://expressjs.com/en/api.html">https://expressjs.com/en/api.html</a>
+And this package also provide options
+```js
+const Route = require('express-group-router');
+let router = new Route({ options: { caseSensitive: true, mergeParams: false, strict: true }});
+// Or 
+router.setOptions({
+    caseSensitive: false
+});
 
+// or
+router.param('id', (req, res, next) => {
+    // do something...
+    req.object = 'object value';
+})
+router.group((router) => {
+    router.get('/value/:id', (req, res) => {
+        res.send(req.object);
+    });
+}).prefix('test').setOptions({ mergeParams: true });
+// route: /test/value/:id return 'object value' on browser.
+// To convinient, the mergeParams default value is true;
+// If the parent and the child have conflicting param names, the child’s value take precedence.
+
+// if mergeParams = false => route /test/value/:id will return undefined;
+router.group({ prefix: 'test2', options: { mergeParams: false }}, (router) => {
+    router.get('/:id', (router) => {
+        res.send(req.object); // return undefined;
+    })
+});
+```
 ### Version 1.x
 ```js
 const express = require('express');

@@ -1,10 +1,6 @@
 {
   "name": "express-group-router",
-<<<<<<< Updated upstream
-  "version": "2.0.6",
-=======
-  "version": "2.0.7",
->>>>>>> Stashed changes
+  "version": "2.1.0",
   "description": "Extend the router function in ExpressJS for grouping route with prefix and add midddlewares for each route.",
   "main": "index.js",
   "scripts": {
@@ -15,12 +11,12 @@
     "url": "git+https://github.com/trantuan94/express-group-router.git"
   },
   "keywords": [
-    "Grouping",
-    "route",
-    "set",
-    "prefix",
-    "add",
-    "middlewares"
+    "grouping route",
+    "advanced Route",
+    "set prefix route",
+    "Express",
+    "add middlewares",
+    "Route ExpressJS"
   ],
   "author": "Tran Tuan",
   "license": "MIT",
