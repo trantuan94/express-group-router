@@ -1,17 +1,19 @@
-# Express Group Router
+<span align="center">
+    <h1>Express Group Router</h1>
+</span>
 
-## Features:
+# Features:
 This package support extend function of Router in ExpressJS to grouping routes.
 * It can set prefix for an routes group.
 * It can set middlewares for an routes group.
 
-## Installation:
+# Installation:
 ```
 npm i --save express-group-router
 ```
 
-## Usage:
-### Version 2.x
+# Usage:
+## Version 2.x
 ```js
 const express = require('express');
 const app = express();
@@ -88,7 +90,7 @@ router.group({ prefix: 'test2', options: { mergeParams: false }}, (router) => {
     })
 });
 ```
-### Version 1.x
+## Version 1.x
 ```js
 const express = require('express');
 const app = express();
@@ -140,5 +142,11 @@ router.group({ prefix: '/api', middlewares: [fooMiddleware]}, (router) => {
 })
 ```
 
+## Buy me a coffee
+If you like this library, buy me a coffee, thanks!
 
+Vietnam Bank transfer
+<p align="left">
+    <img src="./donate-account.png" width="160" alt="Donate account">
+</p>
 
